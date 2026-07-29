@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Birthday Cake</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: rgba(255, 255, 255, 0.12);
+      --text: #fffdf9;
+      --muted: #dfe9f6;
+      --pink: #ff5fa3;
+      --pink-2: #c2185b;
+      --cream: #ffe7d5;
+      --choco: #5a2d13;
+      --gold: #ffd966;
+      --blue: #6c8cff;
+      --mint: #5be7c4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #17304f 0%, #08111f 55%, #060b14 100%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: 0.16;
+      animation: drift 22s linear infinite;
+    }
+
+    body::after {
+      background: radial-gradient(circle at 50% 20%, rgba(255, 217, 102, 0.16), transparent 32%);
+      animation: pulseGlow 4s ease-in-out infinite;
+    }
+
+    .card {
+      width: min(100%, 100%);
+      height: 100%;
+      max-width: none;
+      padding: 28px;
+      border-radius: 0;
+      background: var(--panel);
+      border: none;
+      box-shadow: none;
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: auto auto -120px -90px;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(255, 95, 163, 0.24), transparent 70%);
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 6px 18px rgba(255, 95, 163, 0.18);
+    }
+
+    .subtext {
+      margin: 0 0 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .scene {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: center;
+      min-height: 500px;
+    }
+
+    .cake-zone {
+      display: grid;
+      place-items: center;
+      padding: 20px 10px;
+    }
+
+    .cake-wrap {
+      position: relative;
+      width: 280px;
+      height: 320px;
+      display: grid;
+      place-items: center;
+    }
+
+    .shadow {
+      width: 210px;
+      height: 28px;
+      position: absolute;
+      bottom: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.38);
+      filter: blur(9px);
+      transform: translateY(12px);
+      z-index: 0;
+    }
+
+    .cake {
+      position: relative;
+      transform-style: preserve-3d;
+      animation: wobble 3.2s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    .layer {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 16px;
+      box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.14);
+    }
+
+    .layer.top {
+      width: 160px;
+      height: 70px;
+      background: linear-gradient(135deg, #ffebc5, #ffd3dc 60%, #ffd966);
+      bottom: 170px;
+      transform: translateX(-50%) rotateX(18deg);
+      border: 4px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .layer.middle {
+      width: 210px;
+      height: 80px;
+      background: linear-gradient(135deg, #ffe7d5, #ff9dc0 80%, #f7b67a);
+      bottom: 110px;
+      transform: translateX(-50%) rotateX(20deg);
+      border: 4px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .layer.base {
+      width: 250px;
+      height: 92px;
+      background: linear-gradient(135deg, #8d4f29, #5a2d13);
+      bottom: 34px;
+      transform: translateX(-50%) rotateX(24deg);
+      border: 4px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .frosting {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fff6eb, #ffd8e4);
+      box-shadow: inset 0 -4px 0 rgba(255, 95, 163, 0.16);
+    }
+
+    .frosting.top {
+      width: 158px;
+      height: 68px;
+      bottom: 170px;
+      transform: translateX(-50%) rotateX(18deg);
+      z-index: 2;
+    }
+
+    .frosting.middle {
+      width: 208px;
+      height: 78px;
+      bottom: 110px;
+      transform: translateX(-50%) rotateX(20deg);
+      z-index: 2;
+    }
+
+    .frosting.base {
+      width: 248px;
+      height: 90px;
+      bottom: 34px;
+      transform: translateX(-50%) rotateX(24deg);
+      z-index: 1;
+    }
+
+    .decor {
+      position: absolute;
+      left: 50%;
+      bottom: 232px;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      gap: 8px;
+    }
+
+    .berry {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--pink));
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+      animation: bounce 1.5s ease-in-out infinite;
+    }
+
+    .berry:nth-child(2) {
+      animation-delay: 0.2s;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--mint));
+    }
+
+    .berry:nth-child(3) {
+      animation-delay: 0.4s;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--blue));
+    }
+
+    .candles {
+      position: absolute;
+      bottom: 210px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 14px;
+      z-index: 4;
+    }
+
+    .candle {
+      width: 12px;
+      height: 56px;
+      border-radius: 8px 8px 4px 4px;
+      background: linear-gradient(180deg, #fff4d5, #ffd966);
+      position: relative;
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12);
+      animation: flicker 1.2s ease-in-out infinite;
+    }
+
+    .candle::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff5fa3;
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px rgba(255, 95, 163, 0.7);
+    }
+
+    .candle::after {
+      content: "";
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      width: 2px;
+      height: 14px;
+      background: #fff;
+      transform: translateX(-50%);
+    }
+
+    .star {
+      position: absolute;
+      color: #ffd966;
+      font-size: 1.15rem;
+      animation: floatStar 2.4s ease-in-out infinite;
+    }
+
+    .star.one {
+      left: 30px;
+      top: 20px;
+    }
+
+    .star.two {
+      right: 34px;
+      top: 24px;
+      animation-delay: 0.3s;
+    }
+
+    .star.three {
+      right: 56px;
+      bottom: 44px;
+      animation-delay: 0.7s;
+    }
+
+    .message-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 22px;
+      padding: 22px;
+      line-height: 1.7;
+      color: var(--muted);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .message-box strong {
+      color: #fff;
+    }
+
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      box-shadow: 0 10px 24px rgba(194, 24, 91, 0.24);
+    }
+
+    .btn.secondary {
+      background: linear-gradient(135deg, var(--blue), var(--mint));
+      box-shadow: 0 10px 24px rgba(108, 140, 255, 0.2);
+    }
+
+    @keyframes wobble {
+
+      0%,
+      100% {
+        transform: rotate(-2deg);
+      }
+
+      50% {
+        transform: rotate(2deg);
+      }
+    }
+
+    @keyframes flicker {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+
+    @keyframes floatStar {
+
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-6px) scale(1.1);
+      }
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        opacity: 0.8;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes drift {
+      from {
+        transform: translateX(-4px);
+      }
+
+      to {
+        transform: translateX(4px);
+      }
+    }
+
+    @media (max-width: 840px) {
+      .scene {
+        grid-template-columns: 1fr;
+      }
+
+      .cake-zone {
+        order: 1;
+      }
+
+      .message-box {
+        order: 2;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <h1>3D Birthday Cake</h1>
+    <p class="subtext">A sweet little celebration page with a layered cake, candles, and sparkle.</p>
+
+    <div class="scene">
+      <section class="cake-zone" aria-label="3D birthday cake illustration">
+        <div class="cake-wrap">
+          <div class="shadow"></div>
+          <div class="star one">✦</div>
+          <div class="star two">✦</div>
+          <div class="star three">✦</div>
+
+          <div class="cake">
+            <div class="layer top"></div>
+            <div class="frosting top"></div>
+            <div class="layer middle"></div>
+            <div class="frosting middle"></div>
+            <div class="layer base"></div>
+            <div class="frosting base"></div>
+            <div class="decor">
+              <div class="berry"></div>
+              <div class="berry"></div>
+              <div class="berry"></div>
+            </div>
+            <div class="candles">
+              <div class="candle"></div>
+              <div class="candle"></div>
+              <div class="candle"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="message-box">
+        <p><strong>Happy Birthday, Abi!</strong></p>
+        <p>Here is a cheerful 3D cake page just for you, filled with color, sparkle, and a little extra joy.</p>
+        <p>May your day be sweet, your smile stay bright, and your heart feel full of love.</p>
+        <div class="actions">
+          <a class="btn" href="birthday-surprise.html">Open surprise page</a>
+          <a class="btn secondary" href="abinaya%20birthday.html">Back to login</a>
+          <a class="btn" href="birthday-surprise.html">Next</a>
+          <a class="btn secondary" href="abinaya%20birthday.html">Open main birthday page</a>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+
+</html>
